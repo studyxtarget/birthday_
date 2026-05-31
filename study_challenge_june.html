@@ -410,6 +410,13 @@ body {
   border: 1px solid rgba(255,171,0,0.3);
 }
 .save-btn.share-btn:hover { border-color: var(--amber); }
+.save-btn.undo-btn {
+  background: var(--card);
+  color: var(--accent);
+  border: 1px solid rgba(233,69,96,0.3);
+  flex: 0.7;
+}
+.save-btn.undo-btn:not([disabled]):hover { border-color: var(--accent); background: rgba(233,69,96,0.1); }
 
 /* TOAST */
 .toast {
@@ -539,6 +546,7 @@ body {
   <button class="save-btn export-btn" onclick="exportData()">💾 BACKUP</button>
   <button class="save-btn import-btn" onclick="openImport()">📂 RESTORE</button>
   <button class="save-btn share-btn" onclick="shareText()">📋 COPY DATA</button>
+  <button class="save-btn undo-btn" id="undo-btn" onclick="undoLast()" disabled style="opacity:0.4">↩ UNDO</button>
 </div>
 
 <div class="modal-overlay" id="import-modal">
@@ -582,6 +590,7 @@ const START_OFFSET = 0; // June 1 is Monday
 
 let state = loadState();
 let activeTab = 0;
+let undoStack = []; // stores previous states
 
 function loadState() {
   try {
@@ -718,7 +727,29 @@ function buildPanelHTML(member, mi) {
   `;
 }
 
+function pushUndo() {
+  undoStack.push(JSON.stringify(state));
+  if (undoStack.length > 30) undoStack.shift();
+  document.getElementById("undo-btn").disabled = false;
+  document.getElementById("undo-btn").style.opacity = "1";
+}
+
+function undoLast() {
+  if (!undoStack.length) return;
+  state = JSON.parse(undoStack.pop());
+  saveState();
+  buildPanels();
+  updateTabs();
+  updateLeaderboard();
+  if (!undoStack.length) {
+    document.getElementById("undo-btn").disabled = true;
+    document.getElementById("undo-btn").style.opacity = "0.4";
+  }
+  showToast("↩ UNDO DONE");
+}
+
 function toggleDay(member, dayIndex) {
+  pushUndo();
   const cur = state.members[member][dayIndex];
   const next = cur === null ? "C" : cur === "C" ? "I" : null;
   state.members[member][dayIndex] = next;
