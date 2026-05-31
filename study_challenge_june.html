@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Study Challenge – June 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #12121a;
+  --card: #1a1a26;
+  --border: #252535;
+  --accent: #e94560;
+  --green: #00e676;
+  --amber: #ffab00;
+  --blue: #448aff;
+  --text: #e8e8f0;
+  --muted: #5a5a7a;
+  --glow-r: rgba(233,69,96,0.25);
+  --glow-g: rgba(0,230,118,0.25);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Rajdhani', sans-serif;
+  min-height: 100vh;
+  padding: 0 0 60px;
+}
+
+/* HEADER */
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 18px 16px 14px;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-badge {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+.header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+}
+.header h1 span { color: var(--accent); }
+.header-meta {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 3px;
+  letter-spacing: 1px;
+}
+
+/* SCORE RULES */
+.rules {
+  display: flex;
+  padding: 10px 12px;
+  gap: 8px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+.rule {
+  flex: 1;
+  text-align: center;
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 8px 4px;
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+.rule .val {
+  font-family: 'Space Mono', monospace;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+}
+.rule .lbl { color: var(--muted); font-size: 10px; margin-top: 2px; }
+.rule.c-rule { border-top: 2px solid var(--green); }
+.rule.c-rule .val { color: var(--green); }
+.rule.i-rule { border-top: 2px solid var(--accent); }
+.rule.i-rule .val { color: var(--accent); }
+.rule.t-rule { border-top: 2px solid var(--amber); }
+.rule.t-rule .val { color: var(--amber); font-size: 12px; margin-top: 3px; }
+
+/* MEMBER TABS */
+.tabs {
+  display: flex;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 89px;
+  z-index: 99;
+}
+.tab {
+  flex: 1;
+  padding: 12px 4px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  position: relative;
+}
+.tab.active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+.tab .tab-score {
+  display: block;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  font-weight: 400;
+  margin-top: 2px;
+}
+.tab .tab-score.pos { color: var(--green); }
+.tab .tab-score.neg { color: var(--accent); }
+.tab .tab-score.zero { color: var(--muted); }
+
+/* MEMBER PANEL */
+.member-panel { display: none; padding: 14px 12px; }
+.member-panel.active { display: block; }
+
+/* SCORE SUMMARY */
+.score-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--blue);
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  transition: border-left-color 0.3s;
+}
+.score-summary.pos { border-left-color: var(--green); }
+.score-summary.neg { border-left-color: var(--accent); }
+.score-name { font-size: 20px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+.score-right { text-align: right; }
+.score-val {
+  font-family: 'Space Mono', monospace;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+}
+.score-val.pos { color: var(--green); }
+.score-val.neg { color: var(--accent); }
+.score-val.zero { color: var(--muted); }
+.score-status {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 2px;
+  margin-top: 3px;
+}
+
+/* STATS ROW */
+.stats-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.stat-box {
+  flex: 1;
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 8px;
+  text-align: center;
+}
+.stat-val {
+  font-family: 'Space Mono', monospace;
+  font-size: 20px;
+  font-weight: 700;
+}
+.stat-val.c-val { color: var(--green); }
+.stat-val.i-val { color: var(--accent); }
+.stat-val.b-val { color: var(--muted); }
+.stat-lbl { font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-top: 2px; }
+
+/* CALENDAR */
+.cal-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 2px;
+}
+.cal-day-name {
+  text-align: center;
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  padding: 4px 0;
+  letter-spacing: 1px;
+}
+.cal-day-name.sun { color: var(--accent); }
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+.cal-cell {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--card);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.cal-cell:active { transform: scale(0.93); }
+.cal-cell.empty { background: transparent; border-color: transparent; cursor: default; }
+.cal-cell.today { border-color: var(--blue); }
+.cal-cell.sunday { border-color: rgba(233,69,96,0.2); }
+
+.cal-cell .date-num {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1;
+  margin-bottom: 2px;
+}
+.cal-cell.today .date-num { color: var(--blue); }
+.cal-cell.sunday .date-num { color: rgba(233,69,96,0.6); }
+
+.cal-cell .day-mark {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.cal-cell.complete {
+  background: rgba(0,230,118,0.12);
+  border-color: rgba(0,230,118,0.4);
+}
+.cal-cell.complete .date-num { color: rgba(0,230,118,0.6); }
+.cal-cell.complete .day-mark { color: var(--green); }
+
+.cal-cell.incomplete {
+  background: rgba(233,69,96,0.1);
+  border-color: rgba(233,69,96,0.35);
+}
+.cal-cell.incomplete .date-num { color: rgba(233,69,96,0.6); }
+.cal-cell.incomplete .day-mark { color: var(--accent); }
+
+.cal-cell.future { opacity: 0.4; cursor: default; }
+
+/* SUNDAY LABELS */
+.cal-cell.sunday-lb {
+  position: relative;
+}
+.cal-cell.sunday-lb::after {
+  content: 'LB';
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  font-family: 'Space Mono', monospace;
+  font-size: 6px;
+  color: var(--accent);
+  opacity: 0.7;
+  letter-spacing: 0;
+}
+
+/* LEGEND */
+.legend {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+  justify-content: center;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--muted);
+  font-family: 'Space Mono', monospace;
+}
+.legend-dot {
+  width: 10px; height: 10px;
+  border-radius: 1px;
+}
+.legend-dot.c { background: var(--green); }
+.legend-dot.i { background: var(--accent); }
+.legend-dot.blank { background: var(--card); border: 1px solid var(--border); }
+
+/* LEADERBOARD SECTION */
+.lb-section {
+  padding: 14px 12px;
+  border-top: 3px solid var(--border);
+}
+.section-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: var(--muted);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+.lb-row {
+  display: flex;
+  align-items: center;
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 12px 14px;
+  margin-bottom: 6px;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+}
+.lb-row.rank-1 { border-left: 3px solid #ffd700; }
+.lb-row.rank-2 { border-left: 3px solid #b0b0b0; }
+.lb-row.rank-3 { border-left: 3px solid #cd7f32; }
+.lb-medal { font-size: 18px; width: 24px; text-align: center; }
+.lb-name { flex: 1; font-size: 18px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+.lb-pts {
+  font-family: 'Space Mono', monospace;
+  font-size: 22px;
+  font-weight: 700;
+}
+.lb-pts.pos { color: var(--green); }
+.lb-pts.neg { color: var(--accent); }
+.lb-pts.zero { color: var(--muted); }
+.lb-bar-bg { position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--border); }
+.lb-bar { position: absolute; bottom: 0; left: 0; height: 2px; transition: width 0.5s; }
+.lb-bar.pos { background: var(--green); }
+.lb-bar.neg { background: var(--accent); }
+
+.penalty-box {
+  background: var(--card);
+  border: 1px solid var(--accent);
+  padding: 14px;
+  text-align: center;
+  margin-top: 8px;
+  position: relative;
+  overflow: hidden;
+}
+.penalty-box::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(233,69,96,0.07) 0%, transparent 70%);
+}
+.penalty-label { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 3px; color: var(--accent); margin-bottom: 6px; }
+.penalty-name { font-size: 22px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+.penalty-desc { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 4px; }
+
+/* SAVE BAR */
+.save-bar {
+  display: flex;
+  gap: 6px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 151px;
+  z-index: 98;
+}
+.save-btn {
+  flex: 1;
+  padding: 9px 4px;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+.save-btn.export-btn {
+  background: var(--green);
+  color: #000;
+}
+.save-btn.export-btn:hover { opacity: 0.85; }
+.save-btn.import-btn {
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.save-btn.import-btn:hover { border-color: var(--blue); color: var(--blue); }
+.save-btn.share-btn {
+  background: var(--card);
+  color: var(--amber);
+  border: 1px solid rgba(255,171,0,0.3);
+}
+.save-btn.share-btn:hover { border-color: var(--amber); }
+
+/* TOAST */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: var(--green);
+  color: #000;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  padding: 10px 20px;
+  font-weight: 700;
+  transition: transform 0.3s;
+  z-index: 9999;
+  white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* IMPORT modal */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 9000;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--blue);
+  padding: 20px;
+  width: 100%;
+  max-width: 380px;
+}
+.modal-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--blue);
+  margin-bottom: 12px;
+}
+.modal textarea {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  padding: 10px;
+  resize: vertical;
+  min-height: 120px;
+  outline: none;
+  margin-bottom: 10px;
+}
+.modal textarea:focus { border-color: var(--blue); }
+.modal-btns { display: flex; gap: 8px; }
+.modal-btn {
+  flex: 1;
+  padding: 10px;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+}
+.modal-btn.confirm { background: var(--blue); color: white; }
+.modal-btn.cancel { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
+
+/* hint */
+.hint-bar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0;
+  padding: 8px 12px;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  text-align: center;
+  margin-bottom: 14px;
+  letter-spacing: 1px;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-badge">STUDY CHALLENGE — MONTHLY TRACKER</div>
+  <h1>JUNE <span>2026</span></h1>
+  <div class="header-meta">TAP DAY → C (COMPLETE) → I (INCOMPLETE) → CLEAR</div>
+</div>
+
+<div class="rules">
+  <div class="rule c-rule">
+    <div class="val">+2</div>
+    <div class="lbl">COMPLETE</div>
+  </div>
+  <div class="rule i-rule">
+    <div class="val">−5</div>
+    <div class="lbl">INCOMPLETE</div>
+  </div>
+  <div class="rule t-rule">
+    <div class="val">TREAT</div>
+    <div class="lbl">LOWEST SCORE</div>
+  </div>
+</div>
+
+<div class="tabs" id="tabs">
+  <div class="tab active" onclick="switchTab(0)" id="tab-0">
+    Aditya<span class="tab-score zero" id="tscore-0">0</span>
+  </div>
+  <div class="tab" onclick="switchTab(1)" id="tab-1">
+    Pratik<span class="tab-score zero" id="tscore-1">0</span>
+  </div>
+  <div class="tab" onclick="switchTab(2)" id="tab-2">
+    Amarjeet<span class="tab-score zero" id="tscore-2">0</span>
+  </div>
+</div>
+
+<div class="save-bar">
+  <button class="save-btn export-btn" onclick="exportData()">💾 BACKUP</button>
+  <button class="save-btn import-btn" onclick="openImport()">📂 RESTORE</button>
+  <button class="save-btn share-btn" onclick="shareText()">📋 COPY DATA</button>
+</div>
+
+<div class="modal-overlay" id="import-modal">
+  <div class="modal">
+    <div class="modal-title">RESTORE BACKUP</div>
+    <textarea id="import-text" placeholder="Yahan backup text paste karo..."></textarea>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="closeImport()">CANCEL</button>
+      <button class="modal-btn confirm" onclick="importData()">RESTORE</button>
+    </div>
+  </div>
+</div>
+
+<div id="panels"></div>
+
+<div class="lb-section">
+  <div class="section-title">JUNE LEADERBOARD</div>
+  <div id="leaderboard"></div>
+  <div class="penalty-box">
+    <div class="penalty-label">⚠ MONTH-END PENALTY</div>
+    <div class="penalty-name" id="penalty-name">—</div>
+    <div class="penalty-desc" id="penalty-desc">Mark days to see who owes a treat</div>
+  </div>
+</div>
+
+<div class="toast" id="toast">SAVED!</div>
+
+<script>
+const MEMBERS = ["Aditya", "Pratik", "Amarjeet"];
+const KEY = "study_june2026";
+const YEAR = 2026, MONTH = 5; // June = month index 5
+const DAYS_IN_JUNE = 30;
+const TODAY = new Date();
+const IS_JUNE_2026 = TODAY.getFullYear() === 2026 && TODAY.getMonth() === 5;
+const TODAY_DATE = IS_JUNE_2026 ? TODAY.getDate() : 0;
+// June 1 2026 = Monday, week starts Monday
+// day of week for June 1: 1 (Mon=1 in JS, but we use Mon-start grid)
+// Col 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat, 6=Sun
+// June 1 = Monday = col 0 → startOffset = 0
+const START_OFFSET = 0; // June 1 is Monday
+
+let state = loadState();
+let activeTab = 0;
+
+function loadState() {
+  try {
+    const s = localStorage.getItem(KEY);
+    if (s) return JSON.parse(s);
+  } catch(e) {}
+  const members = {};
+  MEMBERS.forEach(m => { members[m] = Array(DAYS_IN_JUNE).fill(null); });
+  return { members };
+}
+
+function saveState() {
+  localStorage.setItem(KEY, JSON.stringify(state));
+}
+
+function calcScore(member) {
+  return state.members[member].reduce((sum, d) => {
+    if (d === "C") return sum + 2;
+    if (d === "I") return sum - 5;
+    return sum;
+  }, 0);
+}
+
+function calcStats(member) {
+  const days = state.members[member];
+  return {
+    complete: days.filter(d => d === "C").length,
+    incomplete: days.filter(d => d === "I").length,
+    blank: days.filter(d => d === null).length
+  };
+}
+
+function scoreClass(s) {
+  return s > 0 ? "pos" : s < 0 ? "neg" : "zero";
+}
+
+function fmtScore(s) {
+  return (s > 0 ? "+" : "") + s;
+}
+
+function isSunday(date) {
+  // date is 1-indexed day of June
+  // June 1 = Monday, so Sun = day 7,14,21,28
+  const col = (date - 1 + START_OFFSET) % 7; // 0=Mon..6=Sun
+  return col === 6;
+}
+
+function isFuture(date) {
+  if (!IS_JUNE_2026) return false;
+  return date > TODAY_DATE;
+}
+
+function buildPanels() {
+  const container = document.getElementById("panels");
+  container.innerHTML = "";
+  MEMBERS.forEach((member, mi) => {
+    const panel = document.createElement("div");
+    panel.className = `member-panel${mi === 0 ? " active" : ""}`;
+    panel.id = `panel-${mi}`;
+    panel.innerHTML = buildPanelHTML(member, mi);
+    container.appendChild(panel);
+  });
+}
+
+function buildPanelHTML(member, mi) {
+  const score = calcScore(member);
+  const stats = calcStats(member);
+  const sc = scoreClass(score);
+  const status = score >= 10 ? "CHAMPION" : score >= 0 ? "ON TRACK" : "DANGER ZONE";
+
+  // Calendar cells
+  let cells = "";
+  // Empty offset cells
+  for (let i = 0; i < START_OFFSET; i++) {
+    cells += `<div class="cal-cell empty"></div>`;
+  }
+  for (let d = 1; d <= DAYS_IN_JUNE; d++) {
+    const val = state.members[member][d - 1];
+    const future = isFuture(d);
+    const isToday = IS_JUNE_2026 && d === TODAY_DATE;
+    const isSun = isSunday(d);
+    let cls = "cal-cell";
+    if (future) cls += " future";
+    if (isToday) cls += " today";
+    if (isSun) cls += " sunday sunday-lb";
+    if (val === "C") cls += " complete";
+    else if (val === "I") cls += " incomplete";
+    const mark = val === "C" ? "C" : val === "I" ? "I" : "";
+    const clickHandler = future ? "" : `onclick="toggleDay('${member}',${d-1})"`;
+    cells += `<div class="${cls}" ${clickHandler} id="cell-${mi}-${d-1}">
+      <span class="date-num">${d}</span>
+      <span class="day-mark" id="mark-${mi}-${d-1}">${mark}</span>
+    </div>`;
+  }
+
+  return `
+    <div class="score-summary ${sc}" id="summary-${mi}">
+      <div class="score-name">${member}</div>
+      <div class="score-right">
+        <div class="score-val ${sc}" id="scoreval-${mi}">${fmtScore(score)}</div>
+        <div class="score-status" id="status-${mi}">${status}</div>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="stat-val c-val" id="stat-c-${mi}">${stats.complete}</div>
+        <div class="stat-lbl">COMPLETE</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val i-val" id="stat-i-${mi}">${stats.incomplete}</div>
+        <div class="stat-lbl">INCOMPLETE</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val b-val" id="stat-b-${mi}">${stats.blank}</div>
+        <div class="stat-lbl">REMAINING</div>
+      </div>
+    </div>
+    <div class="hint-bar">TAP: blank → C (+2) → I (−5) → blank &nbsp;|&nbsp; SUN = Leaderboard day</div>
+    <div class="cal-header">
+      <div class="cal-day-name">MON</div>
+      <div class="cal-day-name">TUE</div>
+      <div class="cal-day-name">WED</div>
+      <div class="cal-day-name">THU</div>
+      <div class="cal-day-name">FRI</div>
+      <div class="cal-day-name">SAT</div>
+      <div class="cal-day-name sun">SUN</div>
+    </div>
+    <div class="cal-grid">${cells}</div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot c"></div>C = Complete</div>
+      <div class="legend-item"><div class="legend-dot i"></div>I = Incomplete</div>
+      <div class="legend-item"><div class="legend-dot blank"></div>Not marked</div>
+    </div>
+  `;
+}
+
+function toggleDay(member, dayIndex) {
+  const cur = state.members[member][dayIndex];
+  const next = cur === null ? "C" : cur === "C" ? "I" : null;
+  state.members[member][dayIndex] = next;
+  saveState();
+  updateMemberUI(MEMBERS.indexOf(member));
+  updateLeaderboard();
+  updateTabs();
+  showToast(next === "C" ? "+2 pts!" : next === "I" ? "-5 pts" : "Cleared");
+}
+
+function updateMemberUI(mi) {
+  const member = MEMBERS[mi];
+  const score = calcScore(member);
+  const stats = calcStats(member);
+  const sc = scoreClass(score);
+  const status = score >= 10 ? "CHAMPION" : score >= 0 ? "ON TRACK" : "DANGER ZONE";
+
+  // Score summary
+  const summary = document.getElementById(`summary-${mi}`);
+  if (summary) {
+    summary.className = `score-summary ${sc}`;
+    document.getElementById(`scoreval-${mi}`).className = `score-val ${sc}`;
+    document.getElementById(`scoreval-${mi}`).textContent = fmtScore(score);
+    document.getElementById(`status-${mi}`).textContent = status;
+  }
+  // Stats
+  const sc_el = document.getElementById(`stat-c-${mi}`);
+  const si_el = document.getElementById(`stat-i-${mi}`);
+  const sb_el = document.getElementById(`stat-b-${mi}`);
+  if (sc_el) { sc_el.textContent = stats.complete; si_el.textContent = stats.incomplete; sb_el.textContent = stats.blank; }
+
+  // Calendar cells
+  state.members[member].forEach((val, di) => {
+    const cell = document.getElementById(`cell-${mi}-${di}`);
+    const mark = document.getElementById(`mark-${mi}-${di}`);
+    if (!cell) return;
+    const d = di + 1;
+    const future = isFuture(d);
+    const isToday = IS_JUNE_2026 && d === TODAY_DATE;
+    const isSun = isSunday(d);
+    let cls = "cal-cell";
+    if (future) cls += " future";
+    if (isToday) cls += " today";
+    if (isSun) cls += " sunday sunday-lb";
+    if (val === "C") cls += " complete";
+    else if (val === "I") cls += " incomplete";
+    cell.className = cls;
+    mark.textContent = val === "C" ? "C" : val === "I" ? "I" : "";
+  });
+}
+
+function updateTabs() {
+  MEMBERS.forEach((member, mi) => {
+    const score = calcScore(member);
+    const sc = scoreClass(score);
+    const el = document.getElementById(`tscore-${mi}`);
+    el.className = `tab-score ${sc}`;
+    el.textContent = fmtScore(score);
+  });
+}
+
+function updateLeaderboard() {
+  const scores = MEMBERS.map(m => ({ name: m, score: calcScore(m) }))
+    .sort((a, b) => b.score - a.score);
+  const maxAbs = Math.max(...scores.map(s => Math.abs(s.score)), 1);
+  const medals = ["🥇","🥈","🥉"];
+  const lb = document.getElementById("leaderboard");
+  lb.innerHTML = scores.map((s, i) => {
+    const barW = Math.round((Math.abs(s.score) / maxAbs) * 100);
+    const sc = scoreClass(s.score);
+    return `<div class="lb-row rank-${i+1}">
+      <div class="lb-medal">${medals[i]}</div>
+      <div class="lb-name">${s.name}</div>
+      <div class="lb-pts ${sc}">${fmtScore(s.score)}</div>
+      <div class="lb-bar-bg"></div>
+      <div class="lb-bar ${sc}" style="width:${barW}%"></div>
+    </div>`;
+  }).join("");
+
+  const loser = scores[scores.length - 1];
+  document.getElementById("penalty-name").textContent = loser.name.toUpperCase();
+  if (loser.score < 0) {
+    document.getElementById("penalty-desc").textContent = `Score: ${loser.score} — TREAT DENA HOGA! 🍕`;
+  } else {
+    document.getElementById("penalty-desc").textContent = `Score: ${fmtScore(loser.score)} — Sab safe hain abhi 😅`;
+  }
+}
+
+function switchTab(idx) {
+  activeTab = idx;
+  MEMBERS.forEach((_, i) => {
+    document.getElementById(`tab-${i}`).classList.toggle("active", i === idx);
+    document.getElementById(`panel-${i}`).classList.toggle("active", i === idx);
+  });
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 1200);
+}
+
+// ── PERMANENT SAVE FUNCTIONS ──────────────────────────────────────
+
+function exportData() {
+  const dataStr = JSON.stringify(state, null, 2);
+  const blob = new Blob([dataStr], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "study_challenge_june2026.json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast("BACKUP DOWNLOADED!");
+}
+
+function openImport() {
+  document.getElementById("import-modal").classList.add("open");
+  document.getElementById("import-text").value = "";
+  document.getElementById("import-text").focus();
+}
+
+function closeImport() {
+  document.getElementById("import-modal").classList.remove("open");
+}
+
+function importData() {
+  const txt = document.getElementById("import-text").value.trim();
+  if (!txt) { showToast("Kuch paste karo pehle!"); return; }
+  try {
+    const parsed = JSON.parse(txt);
+    if (!parsed.members) throw new Error("Invalid format");
+    state = parsed;
+    saveState();
+    closeImport();
+    buildPanels();
+    updateTabs();
+    updateLeaderboard();
+    showToast("DATA RESTORED!");
+  } catch(e) {
+    showToast("INVALID DATA!");
+  }
+}
+
+function shareText() {
+  const lines = ["📚 STUDY CHALLENGE — JUNE 2026", ""];
+  MEMBERS.forEach(m => {
+    const score = calcScore(m);
+    const stats = calcStats(m);
+    lines.push(`${m}: ${score > 0 ? "+" : ""}${score} pts (✅${stats.complete} ❌${stats.incomplete})`);
+  });
+  lines.push("", "— Backup Data (copy full text below) —");
+  lines.push(JSON.stringify(state));
+  const text = lines.join("\n");
+
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => showToast("COPIED TO CLIPBOARD!"));
+  } else {
+    // fallback
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    showToast("COPIED!");
+  }
+}
+
+// Auto-remind backup every 7 days
+function checkBackupReminder() {
+  const last = localStorage.getItem("last_backup_remind");
+  const now = Date.now();
+  if (!last || now - parseInt(last) > 7 * 24 * 60 * 60 * 1000) {
+    localStorage.setItem("last_backup_remind", now.toString());
+    setTimeout(() => showToast("💾 BACKUP LENA MAT BHOOLO!"), 3000);
+  }
+}
+
+// Init
+buildPanels();
+updateTabs();
+updateLeaderboard();
+checkBackupReminder();
+</script>
+</body>
+</html>
